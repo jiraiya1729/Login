@@ -48,30 +48,39 @@ def create_token():
     # response = {"access_token":access_token}
     
     return jsonify({
-        "email": email,
+        "email": user.email,   # using user.email instead of the email from the request just for consistency
+        "name": user.name,
+        "number": user.number,
+        "age": user.age,
         "access_token": access_token
     })
     
 @app.route("/signup", methods=["POST"])
 def signup():
-    email = request.json["email"]
-    password = request.json["password"]
-    
+    email = request.json.get("email")
+    password = request.json.get("password")
+    name = request.json.get("name")
+    number = request.json.get("number")
+    age = request.json.get("age")
     user_exists = User.query.filter_by(email=email).first() is not None
     
     if user_exists:
         return jsonify({"error": "Email already exists"}), 409
 
     hashed_password = bcrypt.generate_password_hash(password)
-    name="jiraiya_" + str(datetime.utcnow().timestamp())
-    new_user = User( name=name, email=email, password=hashed_password, about="sample")
+    
+    new_user = User( name=name, email=email, password=hashed_password, age =age, number =number)
     db.session.add(new_user)
     db.session.commit()
     
     return jsonify({
-        "id": new_user.id,
-        "email": new_user.email
-    })
+    "id": new_user.id,
+    "email": new_user.email,
+    "name": new_user.name,
+    "number": new_user.number,
+    "age": new_user.age
+})
+
     
 @app.after_request
 def refresh_expiring_jwts(response):
@@ -96,7 +105,7 @@ def logout():
     return response 
     
 @app.route('/profile/<getemail>')
-@jwt_required()
+# @jwt_required()
 def my_profile(getemail):
     print(getemail)
     if not getemail:
@@ -105,13 +114,14 @@ def my_profile(getemail):
         }), 401
     user = User.query.filter_by(email=getemail).first()
     
-    response_body = {
+    response_body = jsonify({
         "id": user.id,
         "name":user.name,
         "email":user.email,
-        "about":user.about
+        "age":user.age,
+        "number":user.number
         
-    }
+    })
     return response_body    
 
 
