@@ -48,8 +48,7 @@ def create_token():
     # response = {"access_token":access_token}
     
     return jsonify({
-        "email": user.email,   # using user.email instead of the email from the request just for consistency
-        "name": user.name,
+        "email": user.email,  
         "number": user.number,
         "age": user.age,
         "access_token": access_token
